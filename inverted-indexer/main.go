@@ -76,10 +76,7 @@ func toString(m map[string][]int) string {
 		keys = append(keys, k)
 	}
 
-	sort.Slice(keys, func(i, j int) bool {
-		return keys[i] < keys[j]
-	})
-
+	sort.Strings(keys)
 	for _, key := range keys {
 		str := ""
 		indices := m[key]
