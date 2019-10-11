@@ -6,14 +6,15 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/bgeraci714/indexer"
 )
 
 func main() {
-	if len(os.Args[1:]) != 1 {
+	if len(os.Args[1:]) != 2 {
 		fmt.Println("Wrong number of inputs, need two.")
 		return
 	}
@@ -24,9 +25,25 @@ func main() {
 		return
 	}
 
+	threads, err := strconv.Atoi(os.Args[2])
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
-	invertedIndex := buildInvertedIndex(scanner)
+	var invertedIndex map[string][]int
+
+	switch {
+	case threads == 1:
+		invertedIndex = indexer.BuildInvertedIndexWithSingleWriter(scanner)
+	case threads > 1:
+		invertedIndex = indexer.BuildInvertedIndexWithMultipleWriters(scanner, threads)
+	default:
+		invertedIndex = indexer.BuildInvertedIndexWithSingleThread(scanner)
+	}
+
 	fmt.Println(toString(invertedIndex))
 }
 
@@ -34,39 +51,6 @@ func check(e error) {
 	if e != nil {
 		panic(e)
 	}
-}
-
-func buildInvertedIndex(scanner *bufio.Scanner) map[string][]int {
-
-	index := make(map[string][]int)
-	re := regexp.MustCompile(`([a-z]|[A-Z])+`)
-	documentIndex := 0
-	for scanner.Scan() {
-		file, err := os.Open(scanner.Text())
-		if err != nil {
-			fmt.Println("ERROR: Could not find file: " + scanner.Text())
-			continue
-		}
-
-		// read sub file
-		document := bufio.NewScanner(file)
-		for document.Scan() {
-			line := document.Text()
-			words := re.FindAllString(string(line), -1)
-			for _, word := range words {
-				seen, ok := index[word]
-				if ok && seen[len(seen)-1] != documentIndex {
-					index[word] = append(seen, documentIndex)
-				} else {
-					index[word] = []int{documentIndex}
-				}
-			}
-		}
-
-		documentIndex++
-	}
-
-	return index
 }
 
 func toString(m map[string][]int) string {
