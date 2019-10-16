@@ -36,9 +36,9 @@ func main() {
 	var invertedIndex map[string][]int
 
 	switch {
-	case threads == 1:
-		invertedIndex = indexer.BuildInvertedIndexWithSingleWriter(scanner)
-	case threads > 1:
+	// case threads == 1:
+	// invertedIndex = indexer.BuildInvertedIndexWithSingleWriter(scanner)
+	case threads >= 1:
 		invertedIndex = indexer.BuildInvertedIndexWithMultipleWriters(scanner, threads)
 	default:
 		invertedIndex = indexer.BuildInvertedIndexWithSingleThread(scanner)
