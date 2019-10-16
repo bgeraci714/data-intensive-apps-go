@@ -67,7 +67,7 @@ func sorter(ch <-chan Word, chs []chan Word, wg *sync.WaitGroup) {
 	for {
 		if word, more := <-ch; more {
 			i := hash(word.word) % len(chs)
-			fmt.Printf("Sorting: %s -> %d\n", word.word, i)
+			fmt.Printf("Sorting: %s -> %d\n", word, i)
 			chs[i] <- word // send word to appropriate channel
 		} else {
 			wg.Done()
@@ -88,7 +88,7 @@ func hash(s string) int {
 func writer(ch <-chan Word, index *sync.Map, wg *sync.WaitGroup) {
 	for {
 		if word, more := <-ch; more {
-			fmt.Printf("Writing: %s : %d\n", word.word, word.index)
+			fmt.Printf("Writing: %s\n", word)
 			seen, loaded := index.LoadOrStore(word.word, []int{word.index})
 			if loaded {
 				seen = append(seen.([]int), word.index)

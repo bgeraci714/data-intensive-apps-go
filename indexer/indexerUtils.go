@@ -13,6 +13,10 @@ type Word struct {
 	index int
 }
 
+func (w Word) String() string {
+	return fmt.Sprintf("[%s, %d]", w.word, w.index)
+}
+
 // AddDocumentToIndex adds a document to an index given a single thread
 func AddDocumentToIndex(document *bufio.Scanner, documentIndex int, index *map[string][]int, re *regexp.Regexp) {
 	for document.Scan() {
@@ -35,8 +39,9 @@ func reader(document *bufio.Scanner, documentIndex int, re *regexp.Regexp, ch ch
 		words := re.FindAllString(string(line), -1)
 		for _, word := range words {
 			// send word in channel
-			fmt.Printf("Sending: %s : %d\n", word, documentIndex)
-			ch <- Word{word, documentIndex}
+			w := Word{word, documentIndex}
+			fmt.Printf("Sending: %s\n", w)
+			ch <- w
 		}
 	}
 	wg.Done()
