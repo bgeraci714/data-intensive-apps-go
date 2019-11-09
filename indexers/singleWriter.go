@@ -13,11 +13,10 @@ func singleWriter(ch <-chan Word, index *map[string][]int, done chan<- bool) {
 		word, more := <-ch
 		if more {
 			seen, ok := (*index)[word.word]
-			// fmt.Printf("Received: %s : %d\n", word.word, word.index)
-			if ok && !contains(seen, word.index) {
-				(*index)[word.word] = append(seen, word.index)
-			} else {
+			if !ok {
 				(*index)[word.word] = []int{word.index}
+			} else if !contains(seen, word.index) {
+				(*index)[word.word] = append(seen, word.index)
 			}
 		} else {
 			done <- true

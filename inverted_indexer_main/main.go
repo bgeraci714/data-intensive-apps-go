@@ -15,7 +15,7 @@ import (
 
 func main() {
 	if len(os.Args[1:]) != 2 {
-		fmt.Println("Wrong number of inputs, need two.")
+		fmt.Println("Wrong number of inputs: ./main.go [file path] [num threads]")
 		return
 	}
 

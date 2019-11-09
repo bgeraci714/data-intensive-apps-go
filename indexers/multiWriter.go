@@ -90,7 +90,7 @@ func writer(ch <-chan Word, index *sync.Map, wg *sync.WaitGroup) {
 		if word, more := <-ch; more {
 			// fmt.Printf("Writing: %s\n", word)
 			seen, loaded := index.LoadOrStore(word.word, []int{word.index})
-			if loaded {
+			if loaded && !contains(seen.([]int), word.index) {
 				seen = append(seen.([]int), word.index)
 				index.Store(word.word, seen)
 			}

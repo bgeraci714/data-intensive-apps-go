@@ -17,22 +17,6 @@ func (w Word) String() string {
 	return fmt.Sprintf("[%s, %d]", w.word, w.index)
 }
 
-// AddDocumentToIndex adds a document to an index given a single thread
-func AddDocumentToIndex(document *bufio.Scanner, documentIndex int, index *map[string][]int, re *regexp.Regexp) {
-	for document.Scan() {
-		line := document.Text()
-		words := re.FindAllString(string(line), -1)
-		for _, word := range words {
-			seen, ok := (*index)[word]
-			if ok && seen[len(seen)-1] != documentIndex {
-				(*index)[word] = append(seen, documentIndex)
-			} else {
-				(*index)[word] = []int{documentIndex}
-			}
-		}
-	}
-}
-
 func reader(document *bufio.Scanner, documentIndex int, re *regexp.Regexp, ch chan<- Word, wg *sync.WaitGroup) {
 	for document.Scan() {
 		line := document.Text()
@@ -40,7 +24,6 @@ func reader(document *bufio.Scanner, documentIndex int, re *regexp.Regexp, ch ch
 		for _, word := range words {
 			// send word in channel
 			w := Word{word, documentIndex}
-			// fmt.Printf("Sending: %s\n", w)
 			ch <- w
 		}
 	}
