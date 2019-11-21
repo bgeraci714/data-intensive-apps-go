@@ -6,3 +6,13 @@ There are three different impelementations for the inverted indexer. `inverted_i
 1. Single Threaded 
 2. Multiple Reader threads, Single Writer thread
 3. Multiple Reader threads, Multiple Writer threads, also includes Sorting threads
+
+## Red-Black Tree Implementation
+Basic red black tree implementation. Not explicitly threadsafe. 
+
+## TODO 
+1. ~~Build in memory key-value server using the red black tree implementation for store's structure.~~  
+2. Add logging in advance of writing to the store in order to provide crash/fault tolerance. 
+3. Develop routine that saves the current data store's state into a segment file which can then be incorporated into database queries. 
+4. Develop merge and compression routine for the segment files. 
+5. Allow for rollbacks of the database using the log
