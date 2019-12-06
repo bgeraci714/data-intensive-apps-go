@@ -1,6 +1,7 @@
 package rbtree
 
 import (
+	"bytes"
 	"fmt"
 )
 
@@ -14,7 +15,7 @@ type RBTree struct {
 func (t *RBTree) Get(key string) (interface{}, bool) {
 	node, found := t.GetNode(key)
 	if found {
-		return node.value, true
+		return node.Value, true
 	}
 	return nil, false
 }
@@ -30,12 +31,12 @@ func getNodeRec(n *Node, key string, compare func(a, b interface{}) int) (*Node,
 		return nil, false
 	}
 
-	cmp := compare(key, n.key)
+	cmp := compare(key, n.Key)
 	switch {
-	case cmp > 0: // key > n.key
-		return getNodeRec(n.right, key, compare)
-	case cmp < 0: // key < n.key
-		return getNodeRec(n.left, key, compare)
+	case cmp > 0: // key > n.Key
+		return getNodeRec(n.Right, key, compare)
+	case cmp < 0: // key < n.Key
+		return getNodeRec(n.Left, key, compare)
 	default: // node was found
 		return n, true
 	}
@@ -43,65 +44,65 @@ func getNodeRec(n *Node, key string, compare func(a, b interface{}) int) (*Node,
 
 func recolor(nodes []*Node) {
 	for _, n := range nodes {
-		n.color = !n.color
+		n.Color = !n.Color
 	}
 }
 
 // Translated from https://www.cs.auckland.ac.nz/software/AlgAnim/red_black.html
 func leftRotate(t *RBTree, x *Node) {
-	y := x.right
+	y := x.Right
 
 	// turn y's left sub-tree into x's right sub-tree
-	x.right = y.left
-	if y.left != nil {
-		y.left.parent = x
+	x.Right = y.Left
+	if y.Left != nil {
+		y.Left.Parent = x
 	}
 
 	// y's new parent was x's parent
-	y.parent = x.parent
+	y.Parent = x.Parent
 
 	// set the parent to point to y instead of x
 	// need to check first if we're at the root
-	if x.parent == nil {
+	if x.Parent == nil {
 		t.Root = y
-	} else if x == x.parent.left {
+	} else if x == x.Parent.Left {
 		// x is on left of its parent
-		x.parent.left = y
+		x.Parent.Left = y
 	} else { // otherwise x must have been on the right
-		x.parent.right = y
+		x.Parent.Right = y
 	}
 
 	// put x on y's left
-	y.left = x
-	x.parent = y
+	y.Left = x
+	x.Parent = y
 }
 
 func rightRotate(t *RBTree, x *Node) {
-	y := x.left
+	y := x.Left
 
 	// turn y's left sub-tree into x's left sub-tree
-	x.left = y.right
-	if y.right != nil {
-		y.right.parent = x
+	x.Left = y.Right
+	if y.Right != nil {
+		y.Right.Parent = x
 	}
 
 	// y's new parent was x's parent
-	y.parent = x.parent
+	y.Parent = x.Parent
 
 	// set the parent to point to y instead of x
 	// need to check first if we're at the root
-	if x.parent == nil {
+	if x.Parent == nil {
 		t.Root = y
-	} else if x == x.parent.right {
+	} else if x == x.Parent.Right {
 		// x is on right of its parent
-		x.parent.right = y
+		x.Parent.Right = y
 	} else { // otherwise x must have been on the left
-		x.parent.left = y
+		x.Parent.Left = y
 	}
 
 	// put x on y's right
-	y.right = x
-	x.parent = y
+	y.Right = x
+	x.Parent = y
 }
 
 // Insert inserts with balanced algorithm involved
@@ -111,59 +112,59 @@ func (t *RBTree) Insert(key string, val interface{}) {
 	t.insert(key, val)
 	n, _ := t.GetNode(key) // will be optimized later
 
-	n.color = Red
-	for n != t.Root && n.parent.color == Red {
-		if n.parent == n.LeftUncle() {
+	n.Color = Red
+	for n != t.Root && n.Parent.Color == Red {
+		if n.Parent == n.LeftUncle() {
 			// if n's parent is a left, the uncle is x's right uncle
 			uncle := n.RightUncle()
-			if uncle != nil && uncle.color == Red {
+			if uncle != nil && uncle.Color == Red {
 				// Do case 1: change the colors
-				n.parent.color = Black
-				uncle.color = Black
-				n.Grandparent().color = Red
+				n.Parent.Color = Black
+				uncle.Color = Black
+				n.Grandparent().Color = Red
 
 				// move n up the tree
 				n = n.Grandparent()
 			} else {
 				// uncle is a black node
-				if n == n.parent.right {
+				if n == n.Parent.Right {
 					// and n is to the right
 					// case 2 - move x up and rotate
-					n = n.parent
+					n = n.Parent
 					leftRotate(t, n)
 				}
 				// case 3
-				n.parent.color = Black
-				n.Grandparent().color = Red
+				n.Parent.Color = Black
+				n.Grandparent().Color = Red
 				rightRotate(t, n.Grandparent())
 			}
 		} else {
 			// if n's parent is a right, the uncle is x's left uncle
 			uncle := n.LeftUncle()
-			if uncle != nil && uncle.color == Red {
+			if uncle != nil && uncle.Color == Red {
 				// Do case 1: change the colors
-				n.parent.color = Black
-				uncle.color = Black
-				n.Grandparent().color = Red
+				n.Parent.Color = Black
+				uncle.Color = Black
+				n.Grandparent().Color = Red
 
 				// move n up the tree
 				n = n.Grandparent()
 			} else {
 				// uncle is a black node
-				if n == n.parent.left {
+				if n == n.Parent.Left {
 					// and n is to the left
 					// case 2 - move x up and rotate
-					n = n.parent
+					n = n.Parent
 					rightRotate(t, n)
 				}
 				// case 3
-				n.parent.color = Black
-				n.Grandparent().color = Red
+				n.Parent.Color = Black
+				n.Grandparent().Color = Red
 				leftRotate(t, n.Grandparent())
 			}
 		}
 	}
-	t.Root.color = Black
+	t.Root.Color = Black
 }
 
 // Insert adds a new key value pair to the tree
@@ -192,14 +193,14 @@ func height(n *Node) int {
 	if n == nil {
 		return -1
 	}
-	return 1 + max(height(n.left), height(n.right))
+	return 1 + max(height(n.Left), height(n.Right))
 }
 
 func sizeRec(n *Node) int {
 	if n == nil {
 		return 0
 	}
-	return 1 + sizeRec(n.left) + sizeRec(n.right)
+	return 1 + sizeRec(n.Left) + sizeRec(n.Right)
 }
 
 func insertRec(n *Node, key string, val interface{}, compare func(a, b interface{}) int, parent *Node) *Node {
@@ -207,14 +208,14 @@ func insertRec(n *Node, key string, val interface{}, compare func(a, b interface
 		return &Node{key, val, nil, nil, false, parent} // might be an issue if this is allocated on function's stack, be mindful of this
 	}
 
-	cmp := compare(key, n.key)
+	cmp := compare(key, n.Key)
 	switch {
-	case cmp > 0: // key > n.key
-		n.right = insertRec(n.right, key, val, compare, n)
-	case cmp < 0: // key < n.key
-		n.left = insertRec(n.left, key, val, compare, n)
-	default: // key == n.key
-		n.value = val // overwrite old value if the keys match
+	case cmp > 0: // key > n.Key
+		n.Right = insertRec(n.Right, key, val, compare, n)
+	case cmp < 0: // key < n.Key
+		n.Left = insertRec(n.Left, key, val, compare, n)
+	default: // key == n.Key
+		n.Value = val // overwrite old value if the keys match
 	}
 	return n
 }
@@ -222,9 +223,9 @@ func insertRec(n *Node, key string, val interface{}, compare func(a, b interface
 // PrintInorder prints out all the nodes of a subtree inorder
 func PrintInorder(n *Node) {
 	if n != nil {
-		PrintInorder(n.left)
-		fmt.Print(n.key)
-		PrintInorder(n.right)
+		PrintInorder(n.Left)
+		fmt.Print(n.Key)
+		PrintInorder(n.Right)
 	}
 }
 
@@ -238,38 +239,38 @@ func delete(n *Node, key string, compare func(a, b interface{}) int) *Node {
 		return nil
 	}
 
-	if cmp := compare(key, n.key); cmp > 0 { // key > n.key
-		n.right = delete(n.right, key, compare)
-	} else if cmp < 0 { // key < n.key
-		n.left = delete(n.left, key, compare)
-	} else { // key == n.key
-		if n.right == nil { // if no right child
-			return n.left
-		} else if n.left == nil { // if there's a right but no left
-			return n.right
+	if cmp := compare(key, n.Key); cmp > 0 { // key > n.Key
+		n.Right = delete(n.Right, key, compare)
+	} else if cmp < 0 { // key < n.Key
+		n.Left = delete(n.Left, key, compare)
+	} else { // key == n.Key
+		if n.Right == nil { // if no right child
+			return n.Left
+		} else if n.Left == nil { // if there's a right but no left
+			return n.Right
 		}
 
 		// both right and left child
 		tmp := n                       // copy over node n
-		n = min(tmp.right)             // swap n for its min on the right
-		n.right = deleteMin(tmp.right) // replace the min that was just copied
-		n.left = tmp.left              // copy over original left node
+		n = min(tmp.Right)             // swap n for its min on the right
+		n.Right = deleteMin(tmp.Right) // replace the min that was just copied
+		n.Left = tmp.Left              // copy over original left node
 	}
 	return n
 }
 
 func min(n *Node) *Node {
-	if n.left == nil {
+	if n.Left == nil {
 		return n
 	}
-	return min(n.left)
+	return min(n.Left)
 }
 
 func deleteMin(n *Node) *Node {
-	if n.left == nil {
-		return n.right
+	if n.Left == nil {
+		return n.Right
 	}
-	n.left = deleteMin(n.left)
+	n.Left = deleteMin(n.Left)
 	return n
 }
 
@@ -286,8 +287,52 @@ func printSubtree(n *Node, h int) string {
 	for i := 0; i < h; i++ {
 		s += "-"
 	}
-	s += n.key + "\n"
-	s += printSubtree(n.left, h+1)
-	s += printSubtree(n.right, h+1)
+	s += n.Key + "\n"
+	s += printSubtree(n.Left, h+1)
+	s += printSubtree(n.Right, h+1)
 	return s
 }
+
+// ToMap converts tree to a map
+func (t RBTree) ToMap() map[string]interface{} {
+	m := make(map[string]interface{})
+	addToMap(t.Root, &m)
+	return m
+}
+
+func addToMap(n *Node, m *map[string]interface{}) {
+	if n == nil {
+		return
+	}
+	addToMap(n.Left, m)
+	addToMap(n.Right, m)
+	(*m)[n.Key] = n.Value
+}
+
+// MarshalBinary marshals the tree into a byte format
+func (t RBTree) MarshalBinary() ([]byte, error) {
+	var b bytes.Buffer
+	// if t.Root.MarshalBinary()
+	// fmt.Fprintf(&b, )
+	return b.Bytes(), nil
+}
+
+// func marshalInorder(n *Node) bytes.Buffer {
+// 	var b bytes.Buffer
+// 	if n == nil {
+// 		return b
+// 	}
+// 	if bytes, err := b.WriteString(n.Key); err != nil {
+
+// 	}
+
+// }
+
+// PrintInorder prints out all the nodes of a subtree inorder
+// func PrintInorder(n *Node) {
+// 	if n != nil {
+// 		PrintInorder(n.Left)
+// 		fmt.Print(n.Key)
+// 		PrintInorder(n.Right)
+// 	}
+// }
